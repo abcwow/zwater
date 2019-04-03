@@ -32,7 +32,9 @@ type JudgeTable struct {
 }
 
 func NewJudgeTalbe() *JudgeTable {
-
+	var table JudgeTable
+	table.ops = make(map[string]bool)
+	return &table
 }
 
 func (m *JudgeTable) Add(item *JudgeItem) {
@@ -63,12 +65,4 @@ func (m *JudgeTable) Judge(cur, prev OP) int {
 
 	return NEXT
 
-}
-
-var m_JudgeTable *JudgeTable
-
-func init() {
-
-	m_JudgeTable = NewJudgeTable()
-	m_JudgeTable.ops = make(map[string]bool)
 }

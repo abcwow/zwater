@@ -6,6 +6,12 @@ type OP struct {
 	origin  *OPS
 }
 
+func NewOp() *OP {
+	var op OP
+
+	return &op
+}
+
 func (op *OP) Identity() string {
 
 	var ident string = ""
@@ -49,9 +55,41 @@ func (op *OP) Description() string {
 
 ///////////////////////////
 
+const (
+	FOUND    int = 0
+	NOTFOUND int = 1
+)
+
 type OPS struct {
+	env *OpsEnv
+
+	z    int
 	cups []CUP
 	ops  []OP
+}
+
+func NewOps() *OPS {
+
+	var ops OPS
+
+	ops.cups = make(CUP, ncups)
+
+	return &ops
+
+}
+
+func (m *OPS) Init(z int, cups []CUP) {
+
+	m.z = z
+
+	m.cups = cups
+
+	var env OpsEnv
+	m.env = &env
+
+	m.enums = m_EnumSetting
+	m.judge = NewJudgeTable()
+	m.path = NewSearchPath()
 }
 
 func (m *OPS) Clone() *OPS {
@@ -60,6 +98,9 @@ func (m *OPS) Clone() *OPS {
 
 	ops.cups = make(CUP, 0, len(m.cups))
 	copy(ops.cups, m.cups)
+
+	ops.z = m.z
+	ops.env = m.env
 
 	return &ops
 }
@@ -83,12 +124,12 @@ func (m *OPS) Do(op *OP) {
 
 }
 
-func (m *OPS) CalcBranches(prev OP) *OPS {
+func (m *OPS) CalcBranches(prev *OP) *OPS {
 
 	d := m.Clone()
 	d.Do(prev)
 
-	for i, opx := range m_EnumSetting.forms {
+	for i, opx := range m.env.forms {
 
 		for _, cup1 := range d.cups {
 			for _, cup2 := range d.cups {
@@ -108,4 +149,35 @@ func (m *OPS) CalcBranches(prev OP) *OPS {
 	}
 
 	return d
+}
+
+func (m *OPS) CheckEnd() {
+
+	total := 0
+	for i, op := range m.cups {
+		total += op.cups[i].current
+	}
+
+	if total == m.z {
+		return FOUND
+	}
+
+	return NOTFOUND
+
+}
+
+//////////////////
+
+type OpsEnv struct {
+	enums *EnumSetting
+	judge *JudgeTable
+	path  *SearchPath
+}
+
+//////////////////////////////////////
+
+func (m *OPS) NextStep() {
+	m_SearchPath
+	m_JudgeTable
+
 }

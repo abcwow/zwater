@@ -17,4 +17,6 @@ var m_EnumSetting *EnumSetting
 
 func init() {
 
+	//TODO:
+
 }
