@@ -32,7 +32,7 @@ func (s *SearchPath) ShowPath() {
 	fmt.Println("total steps: ", len(s.ops))
 	fmt.Println("!path found --> ")
 	for i, op := range s.ops {
-		str := fmt.Sprintf("step%04d: \n", op.Description())
+		fmt.Printf("step%4d: %s\n", i+1, op.Description())
 	}
 	fmt.Println("!path found <-- ")
 }

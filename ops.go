@@ -47,7 +47,7 @@ func (op *OP) Description() string {
 	if cup1.id == cup2.id {
 		str += fmt.Sprintf("cup%d to %d", cup1.id, cup1.current)
 	} else {
-		str += fmt.Sprintf("cup%d to %d from cup%d", cup1.id, cup1.current, cup2.id, cup2.current)
+		str += fmt.Sprintf("cup%d to %d from cup%d left %d", cup1.id, cup1.current, cup2.id, cup2.current)
 	}
 
 	str += " (identity: " + op.Identity() + " )"
@@ -72,8 +72,6 @@ func NewOps() *OPS {
 
 	var ops OPS
 
-	ops.cups = make(CUP, ncups)
-
 	return &ops
 
 }
@@ -87,7 +85,7 @@ func (m *OPS) Init(z int, cups []CUP) {
 	var env OpsEnv
 	m.env = &env
 
-	m.enums = m_EnumSetting
+	m.enum = m_EnumSetting
 	m.judge = NewJudgeTable()
 	m.path = NewSearchPath()
 }
@@ -96,7 +94,9 @@ func (m *OPS) Clone() *OPS {
 
 	var ops OPS
 
-	ops.cups = make(CUP, 0, len(m.cups))
+	n := len(m.cups)
+
+	ops.cups = make(CUP, 0, n)
 	copy(ops.cups, m.cups)
 
 	ops.z = m.z
@@ -133,13 +133,13 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 
 		for _, cup1 := range d.cups {
 			for _, cup2 := range d.cups {
-				before := EnumVar{cup1, cup2, &d}
+				before := EnumVar{cup1, cup2}
 
 				after, err := opx.enum(before)
 				if err != nil {
 					continue
 				}
-				op := OP{i, after}
+				op := OP{i, after, &d}
 				d.ops = append(d.ops, op)
 
 			}
@@ -184,15 +184,16 @@ func (m *OPS) NextStep(prev *OP) {
 		panic(FOUND)
 	}
 
+	//next round search
 	if prev != OpInitial {
 		m.env.path.Push(*op)
 	}
 
-	m.CalcBranches(prev)
+	d := m.CalcBranches(prev)
 
-	for _, opx := range m.ops {
+	for _, opx := range d.ops {
 		if m.env.judge.Judge(opx, prev) != REVERSE {
-			m.NextStep(&opx)
+			d.NextStep(&opx)
 		}
 	}
 
