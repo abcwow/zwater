@@ -37,9 +37,18 @@ func NewJudgeTalbe() *JudgeTable {
 
 func (m *JudgeTable) Add(item *JudgeItem) {
 
+	ident := item.ToString()
+	m.ops[ident] = true
 }
 
 func (m *JudgeTable) Find(item *JudgeItem) bool {
+
+	ident := item.ToString()
+	if b, ok := m.ops[ident]; ok == false {
+		return false
+	}
+
+	return true
 
 }
 
@@ -60,4 +69,6 @@ var m_JudgeTable *JudgeTable
 
 func init() {
 
+	m_JudgeTable = NewJudgeTable()
+	m_JudgeTable.ops = make(map[string]bool)
 }

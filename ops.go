@@ -10,7 +10,7 @@ func (op *OP) Identity() string {
 
 	var ident string = ""
 
-	ident += fmt.Sprintf("op%d", op.opx)
+	ident += fmt.Sprintf("op%d", op.enumidx)
 
 	ops := op.origin
 	var enums string
@@ -29,6 +29,22 @@ func (op *OP) Identity() string {
 
 	return ident
 
+}
+
+func (op *OP) Description() string {
+
+	str := fmt.Sprintf("op%d ", op.enumidx)
+
+	cup1 := &op.cur.from
+	cup2 := &op.cur.to
+
+	if cup1.id == cup2.id {
+		str += fmt.Sprintf("cup%d to %d", cup1.id, cup1.current)
+	} else {
+		str += fmt.Sprintf("cup%d to %d from cup%d", cup1.id, cup1.current, cup2.id, cup2.current)
+	}
+
+	str += " (identity: " + op.Identity() + " )"
 }
 
 ///////////////////////////
