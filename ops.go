@@ -56,8 +56,8 @@ func (op *OP) Description() string {
 ///////////////////////////
 
 const (
-	FOUND    int = 0
-	NOTFOUND int = 1
+	FOUND    int = 400
+	NOTFOUND int = 404
 )
 
 type OPS struct {
@@ -129,7 +129,7 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 	d := m.Clone()
 	d.Do(prev)
 
-	for i, opx := range m.env.forms {
+	for i, opx := range m.env.enum.forms {
 
 		for _, cup1 := range d.cups {
 			for _, cup2 := range d.cups {
@@ -169,15 +169,50 @@ func (m *OPS) CheckEnd() {
 //////////////////
 
 type OpsEnv struct {
-	enums *EnumSetting
+	enum  *EnumSetting
 	judge *JudgeTable
 	path  *SearchPath
 }
 
 //////////////////////////////////////
 
-func (m *OPS) NextStep() {
-	m_SearchPath
-	m_JudgeTable
+var OpInitial *OP = nil
+
+func (m *OPS) NextStep(prev *OP) {
+
+	if m.CheckEnd() == FOUND {
+		panic(FOUND)
+	}
+
+	if prev != OpInitial {
+		m.env.path.Push(*op)
+	}
+
+	m.CalcBranches(prev)
+
+	for _, opx := range m.ops {
+		if m.env.judge.Judge(opx, prev) != REVERSE {
+			m.NextStep(&opx)
+		}
+	}
+
+	if prev != OpInitial {
+		m.env.path.Pop() //NOTE: return here means: not found under this opx, so throw it
+	}
+}
+
+func (m *OPS) RecurseEntry() {
+
+	fmt.Println("begin to search --> ")
+	defer func() {
+		if r := recover(); r != nil {
+			if ret, ok := r.(int); ok && ret == FOUND {
+				m.env.path.ShowPath()
+			}
+		}
+		fmt.Println("stoped to search <-- ")
+	}()
+
+	m.NextStep(OpInitial)
 
 }

@@ -29,11 +29,10 @@ func (s *SearchPath) Pop() {
 
 func (s *SearchPath) ShowPath() {
 
-	fmt.Println("============path found===========")
 	fmt.Println("total steps: ", len(s.ops))
-
+	fmt.Println("!path found --> ")
 	for i, op := range s.ops {
 		str := fmt.Sprintf("step%04d: \n", op.Description())
 	}
-	fmt.Println("============path ended===========")
+	fmt.Println("!path found <-- ")
 }
