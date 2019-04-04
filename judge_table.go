@@ -1,9 +1,6 @@
 package main
 
-type JudgeItem struct {
-}
-
-//////////////////////////
+import "fmt"
 
 type JudgeItem struct {
 	enumidx int //current op idx
@@ -12,7 +9,7 @@ type JudgeItem struct {
 
 func (d *JudgeItem) ToString() string {
 
-	opident := op.Identity()
+	opident := d.op.Identity()
 
 	str := fmt.Sprintf("op%d", d.enumidx) + "_" + opident
 
@@ -31,7 +28,7 @@ type JudgeTable struct {
 	ops map[string]bool
 }
 
-func NewJudgeTalbe() *JudgeTable {
+func NewJudgeTable() *JudgeTable {
 	var table JudgeTable
 	table.ops = make(map[string]bool)
 	return &table
@@ -46,7 +43,7 @@ func (m *JudgeTable) Add(item *JudgeItem) {
 func (m *JudgeTable) Find(item *JudgeItem) bool {
 
 	ident := item.ToString()
-	if b, ok := m.ops[ident]; ok == false {
+	if _, ok := m.ops[ident]; ok == false {
 		return false
 	}
 

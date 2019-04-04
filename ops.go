@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type OP struct {
 	enumidx int
 	cur     EnumVar
@@ -20,13 +22,13 @@ func (op *OP) Identity() string {
 
 	ops := op.origin
 	var enums string
-	for i, v := range ops.cups {
-		if v.id == op.to.id {
-			enums += fmt.Sprintf("_%d", op.to.current)
-		} else if v.id == op.from.id {
-			enums += fmt.Sprintf("_%d", op.from.current)
+	for _, v := range ops.cups {
+		if v.id == op.cur.to.id {
+			enums += fmt.Sprintf("_%d", op.cur.to.current)
+		} else if v.id == op.cur.from.id {
+			enums += fmt.Sprintf("_%d", op.cur.from.current)
 		} else {
-			enums += fmt.Sprintf("_%d", v.cups[i].current)
+			enums += fmt.Sprintf("_%d", v.current)
 		}
 
 	}
@@ -51,6 +53,8 @@ func (op *OP) Description() string {
 	}
 
 	str += " (identity: " + op.Identity() + " )"
+
+	return str
 }
 
 ///////////////////////////
@@ -85,9 +89,9 @@ func (m *OPS) Init(z int, cups []CUP) {
 	var env OpsEnv
 	m.env = &env
 
-	m.enum = m_EnumSetting
-	m.judge = NewJudgeTable()
-	m.path = NewSearchPath()
+	m.env.enum = &m_EnumSetting
+	m.env.judge = NewJudgeTable()
+	m.env.path = NewSearchPath()
 }
 
 func (m *OPS) Clone() *OPS {
@@ -96,7 +100,7 @@ func (m *OPS) Clone() *OPS {
 
 	n := len(m.cups)
 
-	ops.cups = make(CUP, 0, n)
+	ops.cups = make([]CUP, 0, n)
 	copy(ops.cups, m.cups)
 
 	ops.z = m.z
@@ -109,16 +113,16 @@ func (m *OPS) Do(op *OP) {
 	// update to current state of all cups
 	for i, v := range m.cups {
 
-		if v.id == op.to.id {
-			m.cups[i] = op.to
+		if v.id == op.cur.to.id {
+			m.cups[i] = op.cur.to
 		}
 
-		if op.to.id == op.to.from { //do on cup itself
+		if op.cur.to.id == op.cur.from.id { //do on cup itself
 			continue
 		}
 
-		if v.id == prev.from.id {
-			m.cups[i] = op.from
+		if v.id == op.cur.from.id {
+			m.cups[i] = op.cur.from
 		}
 	}
 
@@ -139,7 +143,7 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 				if err != nil {
 					continue
 				}
-				op := OP{i, after, &d}
+				op := OP{i, after, d}
 				d.ops = append(d.ops, op)
 
 			}
@@ -151,11 +155,11 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 	return d
 }
 
-func (m *OPS) CheckEnd() {
+func (m *OPS) CheckEnd() int {
 
 	total := 0
-	for i, op := range m.cups {
-		total += op.cups[i].current
+	for _, op := range m.cups {
+		total += op.current
 	}
 
 	if total == m.z {
@@ -180,19 +184,19 @@ var OpInitial *OP = nil
 
 func (m *OPS) NextStep(prev *OP) {
 
-	if m.CheckEnd() == FOUND {
-		panic(FOUND)
-	}
-
 	//next round search
 	if prev != OpInitial {
-		m.env.path.Push(*op)
+		m.env.path.Push(*prev)
+	}
+
+	if m.CheckEnd() == FOUND {
+		panic(FOUND)
 	}
 
 	d := m.CalcBranches(prev)
 
 	for _, opx := range d.ops {
-		if m.env.judge.Judge(opx, prev) != REVERSE {
+		if m.env.judge.Judge(opx, *prev) != REVERSE {
 			d.NextStep(&opx)
 		}
 	}

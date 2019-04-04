@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type SearchPath struct {
 	ops []OP
 }
@@ -14,7 +16,7 @@ func (s *SearchPath) Init() {
 }
 
 func (s *SearchPath) Push(cur OP) {
-	s.ops = append(s.ops, op)
+	s.ops = append(s.ops, cur)
 }
 
 func (s *SearchPath) Pop() {

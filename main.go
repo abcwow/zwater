@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func main() {
 
 	z, cups := CheckInput()
@@ -12,7 +14,6 @@ func main() {
 func CheckInput() (z int, cups []CUP) {
 
 	var (
-		z     int = 0
 		n     int = 0
 		c     []int
 		total int = 0
@@ -58,11 +59,13 @@ func CheckInput() (z int, cups []CUP) {
 		}
 	}
 
-	cups := make([]CUP, 0, n)
+	cups = make([]CUP, 0, n)
 	for i := 0; i < n; i++ {
 
 		cup := NewCup(c[i])
 		cups = append(cups, *cup)
 	}
+
+	return
 
 }
