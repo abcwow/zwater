@@ -41,7 +41,7 @@ func CheckInput() (z int, cups []CUP) {
 	c = make([]int, n)
 
 	for i := 0; i < n; i++ {
-		fmt.Println("Please input capacity of cup %d:", i+1)
+		fmt.Printf("Please input capacity of cup %d:\n", i+1)
 		fmt.Scanln(&c[i])
 		if c[i] < 0 || c[i] >= 1000 {
 			fmt.Println("capacity of each cup is 0 < 0 < 1000! input again!")
