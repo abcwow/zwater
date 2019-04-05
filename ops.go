@@ -131,7 +131,9 @@ func (m *OPS) Do(op *OP) {
 func (m *OPS) CalcBranches(prev *OP) *OPS {
 
 	d := m.Clone()
-	d.Do(prev)
+	if prev != OpInitial {
+		d.Do(prev)
+	}
 
 	for i, opx := range m.env.enum.forms {
 
@@ -194,6 +196,8 @@ func (m *OPS) NextStep(prev *OP) {
 	}
 
 	d := m.CalcBranches(prev)
+
+	fmt.Printf("branches::(len=%d)%v\n", len(d.ops), d.ops)
 
 	for _, opx := range d.ops {
 		if m.env.judge.Judge(opx, *prev) != REVERSE {
