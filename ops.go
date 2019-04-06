@@ -130,35 +130,37 @@ func (m *OPS) Do(op *OP) {
 
 func (m *OPS) CalcBranches(prev *OP) *OPS {
 
-	fmt.Println("calcbranch -->")
-	defer fmt.Println("calcbranch <--")
+	//fmt.Println("calcbranch -->")
+	//defer fmt.Println("calcbranch <--")
 
-	fmt.Printf("ops::(len=%d) %v\n", len(m.cups), m.cups)
+	//fmt.Printf("ops::(len=%d) %v\n", len(m.cups), m.cups)
 
 	d := m.Clone()
 	if prev != OpInitial {
-		fmt.Println("ops::do update ", prev)
+		//fmt.Println("ops::do update ", prev)
 		d.Do(prev)
 	}
 
-	fmt.Printf("ops::cloned (len=%d) %v\n", len(d.cups), d.cups)
+	//fmt.Printf("ops::cloned (len=%d) %v\n", len(d.cups), d.cups)
 
 	//fmt.Println("enum::len of enums ", len(m.env.enum.forms))
+
+	fmt.Printf(".")
 	for i, opx := range m.env.enum.forms {
 
-		var count int = 0
+		//var count int = 0
 		for _, cup1 := range d.cups {
 			for _, cup2 := range d.cups {
 				before := EnumVar{cup1, cup2}
 
-				count++
-				fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
+				//count++
+				//fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
 				after, err := opx.enum(before)
 				if err != nil {
-					fmt.Println("enum::err:", err.Error())
+					//fmt.Println("enum::err:", err.Error())
 					continue
 				}
-				fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
+				//fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
 				//fmt.Println("calcbranch::found one op!")
 				op := OP{i, after, d}
 				d.ops = append(d.ops, op)
@@ -217,7 +219,7 @@ func (m *OPS) NextStep(prev *OP) {
 
 	d := m.CalcBranches(prev)
 
-	fmt.Printf("branches::(len=%d)%v\n", len(d.ops), d.ops)
+	//fmt.Printf("branches::(len=%d)%v\n", len(d.ops), d.ops)
 
 	for _, opx := range d.ops {
 		if prev == OpInitial || m.env.judge.Judge(opx, *prev) != REVERSE {
@@ -234,12 +236,16 @@ func (m *OPS) RecurseEntry() {
 
 	fmt.Println("begin to search --> ")
 	defer func() {
+
+		defer fmt.Println("stoped to search <-- ")
 		if r := recover(); r != nil {
 			if ret, ok := r.(int); ok && ret == FOUND {
 				m.env.path.ShowPath()
+				return
 			}
 		}
-		fmt.Println("stoped to search <-- ")
+
+		fmt.Println("\n!path not found")
 	}()
 
 	m.NextStep(OpInitial)
