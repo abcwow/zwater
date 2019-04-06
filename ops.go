@@ -18,7 +18,7 @@ func (op *OP) Identity() string {
 
 	var ident string = ""
 
-	ident += fmt.Sprintf("op%d", op.enumidx)
+	ident += fmt.Sprintf("op%d", op.enumidx+1)
 
 	ops := op.origin
 	var enums string
@@ -41,15 +41,15 @@ func (op *OP) Identity() string {
 
 func (op *OP) Description() string {
 
-	str := fmt.Sprintf("op%d ", op.enumidx)
+	str := fmt.Sprintf("op%d ", op.enumidx+1)
 
-	cup1 := &op.cur.from
-	cup2 := &op.cur.to
+	cup2 := &op.cur.from
+	cup1 := &op.cur.to
 
 	if cup1.id == cup2.id {
-		str += fmt.Sprintf("cup%d to %d", cup1.id, cup1.current)
+		str += fmt.Sprintf("cup%d to %d", cup1.id+1, cup1.current)
 	} else {
-		str += fmt.Sprintf("cup%d to %d from cup%d left %d", cup1.id, cup1.current, cup2.id, cup2.current)
+		str += fmt.Sprintf("cup%d to %d from cup%d left %d", cup1.id+1, cup1.current, cup2.id+1, cup2.current)
 	}
 
 	str += " (identity: " + op.Identity() + " )"
@@ -139,7 +139,7 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 
 	//fmt.Println("calcbranch::len of ops cups cloned", len(d.cups))
 
-	fmt.Println("enum::len of enums ", len(m.env.enum.forms))
+	//fmt.Println("enum::len of enums ", len(m.env.enum.forms))
 	for i, opx := range m.env.enum.forms {
 
 		var count int = 0
@@ -148,13 +148,13 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 				before := EnumVar{cup1, cup2}
 
 				count++
-				fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
+				//fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
 				after, err := opx.enum(before)
 				if err != nil {
-					fmt.Println("enum::err:", err.Error())
+					//fmt.Println("enum::err:", err.Error())
 					continue
 				}
-				fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
+				//fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
 				//fmt.Println("calcbranch::found one op!")
 				op := OP{i, after, d}
 				d.ops = append(d.ops, op)
@@ -211,7 +211,7 @@ func (m *OPS) NextStep(prev *OP) {
 	fmt.Printf("branches::(len=%d)%v\n", len(d.ops), d.ops)
 
 	for _, opx := range d.ops {
-		if m.env.judge.Judge(opx, *prev) != REVERSE {
+		if prev == OpInitial || m.env.judge.Judge(opx, *prev) != REVERSE {
 			d.NextStep(&opx)
 		}
 	}
