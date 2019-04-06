@@ -92,6 +92,10 @@ func (m *ToOtherSelfEmpty) enum(before EnumVar) (after EnumVar, err error) {
 		return after, fmt.Errorf("op4 should on two cups")
 	}
 
+	if before.from.current == 0 {
+		return after, fmt.Errorf("op4 shoud from a none-empty cup")
+	}
+
 	if before.to.current+before.from.current > before.to.capacity {
 
 		return after, fmt.Errorf("op4 should make cup b full & cup a empty")

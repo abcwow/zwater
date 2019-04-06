@@ -100,7 +100,7 @@ func (m *OPS) Clone() *OPS {
 
 	n := len(m.cups)
 
-	ops.cups = make([]CUP, 0, n)
+	ops.cups = make([]CUP, n, n)
 	copy(ops.cups, m.cups)
 
 	ops.z = m.z
@@ -130,21 +130,32 @@ func (m *OPS) Do(op *OP) {
 
 func (m *OPS) CalcBranches(prev *OP) *OPS {
 
+	//fmt.Println("calcbranch::len of ops cups ", len(m.cups))
+
 	d := m.Clone()
 	if prev != OpInitial {
 		d.Do(prev)
 	}
 
+	//fmt.Println("calcbranch::len of ops cups cloned", len(d.cups))
+
+	fmt.Println("enum::len of enums ", len(m.env.enum.forms))
 	for i, opx := range m.env.enum.forms {
 
+		var count int = 0
 		for _, cup1 := range d.cups {
 			for _, cup2 := range d.cups {
 				before := EnumVar{cup1, cup2}
 
+				count++
+				fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
 				after, err := opx.enum(before)
 				if err != nil {
+					fmt.Println("enum::err:", err.Error())
 					continue
 				}
+				fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
+				//fmt.Println("calcbranch::found one op!")
 				op := OP{i, after, d}
 				d.ops = append(d.ops, op)
 

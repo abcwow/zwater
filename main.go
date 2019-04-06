@@ -62,7 +62,7 @@ func CheckInput() (z int, cups []CUP) {
 	cups = make([]CUP, 0, n)
 	for i := 0; i < n; i++ {
 
-		cup := NewCup(c[i])
+		cup := NewCup(i, c[i])
 		cups = append(cups, *cup)
 	}
 

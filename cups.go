@@ -8,9 +8,9 @@ type CUP struct {
 	current  int
 }
 
-func NewCup(capacity int) *CUP {
+func NewCup(id, capacity int) *CUP {
 
-	cup := CUP{0, capacity, 0}
+	cup := CUP{id, capacity, 0}
 
 	return &cup
 
