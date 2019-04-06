@@ -130,14 +130,18 @@ func (m *OPS) Do(op *OP) {
 
 func (m *OPS) CalcBranches(prev *OP) *OPS {
 
-	//fmt.Println("calcbranch::len of ops cups ", len(m.cups))
+	fmt.Println("calcbranch -->")
+	defer fmt.Println("calcbranch <--")
+
+	fmt.Printf("ops::(len=%d) %v\n", len(m.cups), m.cups)
 
 	d := m.Clone()
 	if prev != OpInitial {
+		fmt.Println("ops::do update ", prev)
 		d.Do(prev)
 	}
 
-	//fmt.Println("calcbranch::len of ops cups cloned", len(d.cups))
+	fmt.Printf("ops::cloned (len=%d) %v\n", len(d.cups), d.cups)
 
 	//fmt.Println("enum::len of enums ", len(m.env.enum.forms))
 	for i, opx := range m.env.enum.forms {
@@ -148,13 +152,13 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 				before := EnumVar{cup1, cup2}
 
 				count++
-				//fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
+				fmt.Printf("enum::op%d round %d start %v\n", i+1, count, before)
 				after, err := opx.enum(before)
 				if err != nil {
-					//fmt.Println("enum::err:", err.Error())
+					fmt.Println("enum::err:", err.Error())
 					continue
 				}
-				//fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
+				fmt.Printf("enum::op%d round %d found %v\n", i+1, count, after)
 				//fmt.Println("calcbranch::found one op!")
 				op := OP{i, after, d}
 				d.ops = append(d.ops, op)
@@ -168,14 +172,19 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 	return d
 }
 
-func (m *OPS) CheckEnd() int {
+func (m *OPS) CheckEnd(prev *OP) int {
+
+	d := m.Clone()
+	if prev != OpInitial {
+		d.Do(prev)
+	}
 
 	total := 0
-	for _, op := range m.cups {
+	for _, op := range d.cups {
 		total += op.current
 	}
 
-	if total == m.z {
+	if total == d.z {
 		return FOUND
 	}
 
@@ -202,7 +211,7 @@ func (m *OPS) NextStep(prev *OP) {
 		m.env.path.Push(*prev)
 	}
 
-	if m.CheckEnd() == FOUND {
+	if m.CheckEnd(prev) == FOUND {
 		panic(FOUND)
 	}
 

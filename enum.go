@@ -102,12 +102,12 @@ func (m *ToOtherSelfEmpty) enum(before EnumVar) (after EnumVar, err error) {
 	}
 
 	after = before
-	after.from.current = 0
 	if after.to.current+after.from.current > after.to.capacity {
 		after.to.current = after.to.capacity
 	} else {
 		after.to.current = after.to.current + after.from.current
 	}
+	after.from.current = 0
 
 	return after, nil
 
