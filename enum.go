@@ -70,6 +70,10 @@ func (m *FullOther) enum(before EnumVar) (after EnumVar, err error) {
 		return after, fmt.Errorf("op3 should on two cups")
 	}
 
+	if before.to.current == before.to.capacity {
+		return after, fmt.Errorf("op3 should to a cup not full")
+	}
+
 	if before.from.current+before.to.current <= before.to.capacity {
 		return after, fmt.Errorf("op3 should make cup full")
 	}
