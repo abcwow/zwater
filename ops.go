@@ -18,7 +18,13 @@ func (op *OP) Identity() string {
 
 	var ident string = ""
 
-	ident += fmt.Sprintf("op%d", op.enumidx+1)
+	//if op.enumidx == INITIAL {
+
+	//	ident += "OpInitial" //fmt.Sprintf("OpInitial")
+	//} else {
+
+	//	ident += fmt.Sprintf("op%d", op.enumidx+1)
+	//}
 
 	ops := op.origin
 	var enums string
@@ -40,6 +46,10 @@ func (op *OP) Identity() string {
 }
 
 func (op *OP) Description() string {
+	if op.enumidx == INITIAL {
+
+		return "OpInitial (identity: " + op.Identity() + " )"
+	}
 
 	str := fmt.Sprintf("op%d ", op.enumidx+1)
 
@@ -92,6 +102,8 @@ func (m *OPS) Init(z int, cups []CUP) {
 	m.env.enum = &m_EnumSetting
 	m.env.judge = NewJudgeTable()
 	m.env.path = NewSearchPath()
+
+	m.InitOpInitial()
 }
 
 func (m *OPS) Clone() *OPS {
@@ -109,8 +121,53 @@ func (m *OPS) Clone() *OPS {
 	return &ops
 }
 
+//////////////////////////////////////
+
+var OpInitial *OP = nil
+
+const (
+	INITIAL int = -1
+)
+
+func (m *OPS) InitOpInitial() {
+
+	var op OP
+
+	OpInitial = &op
+
+	op.origin = m
+	op.enumidx = INITIAL
+	op.cur.to.id = INITIAL
+	op.cur.from.id = INITIAL
+
+	m.AddOpInitial()
+}
+
+func (m *OPS) AddOpInitial() {
+
+	for i, _ := range m.env.enum.forms {
+		for j, _ := range m.env.enum.forms {
+			var prev OP = *OpInitial
+			prev.enumidx = i
+
+			var cur OP
+			cur.enumidx = j
+			m.env.judge.Judge(cur, prev)
+		}
+	}
+
+	//fmt.Printf("the judge table(len=%d): %v\n", len(m.env.judge.ops), m.env.judge.ops)
+}
+
+///////////////////////////////////
+
 func (m *OPS) Do(op *OP) {
 	// update to current state of all cups
+
+	if op.enumidx == INITIAL {
+		return
+	}
+
 	for i, v := range m.cups {
 
 		if v.id == op.cur.to.id {
@@ -136,10 +193,8 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 	//fmt.Printf("ops::(len=%d) %v\n", len(m.cups), m.cups)
 
 	d := m.Clone()
-	if prev != OpInitial {
-		//fmt.Println("ops::do update ", prev)
-		d.Do(prev)
-	}
+	//fmt.Println("ops::do update ", prev)
+	d.Do(prev)
 
 	//fmt.Printf("ops::cloned (len=%d) %v\n", len(d.cups), d.cups)
 
@@ -177,9 +232,7 @@ func (m *OPS) CalcBranches(prev *OP) *OPS {
 func (m *OPS) CheckEnd(prev *OP) int {
 
 	d := m.Clone()
-	if prev != OpInitial {
-		d.Do(prev)
-	}
+	d.Do(prev)
 
 	total := 0
 	for _, op := range d.cups {
@@ -202,34 +255,41 @@ type OpsEnv struct {
 	path  *SearchPath
 }
 
-//////////////////////////////////////
+func (m *OPS) SingleStepCheck(note string, data interface{}) {
+	//var a string
 
-var OpInitial *OP = nil
+	//fmt.Printf("single step paused::%s::%v. \npress enter to continue\n", note, data)
+	//fmt.Scanln(&a)
+}
 
 func (m *OPS) NextStep(prev *OP) {
 
 	//next round search
-	if prev != OpInitial {
-		m.env.path.Push(*prev)
-	}
+	m.env.path.Push(*prev)
+	//if prev != OpInitial {
+	//	m.env.path.Push(*prev)
+	//}
 
+	m.SingleStepCheck("checkend", prev)
 	if m.CheckEnd(prev) == FOUND {
 		panic(FOUND)
 	}
 
 	d := m.CalcBranches(prev)
-
+	m.SingleStepCheck("calc branches", d.ops)
 	//fmt.Printf("branches::(len=%d)%v\n", len(d.ops), d.ops)
 
 	for _, opx := range d.ops {
-		if prev == OpInitial || m.env.judge.Judge(opx, *prev) != REVERSE {
+		if /*prev == OpInitial ||*/ prev.enumidx == INITIAL || m.env.judge.Judge(opx, *prev) != REVERSE {
+			m.SingleStepCheck("next step", opx)
 			d.NextStep(&opx)
 		}
 	}
 
-	if prev != OpInitial {
-		m.env.path.Pop() //NOTE: return here means: not found under this opx, so throw it
-	}
+	m.env.path.Pop() //NOTE: return here means: not found under this opx, so throw it
+	//if prev != OpInitial {
+	//	m.env.path.Pop() //NOTE: return here means: not found under this opx, so throw it
+	//}
 }
 
 func (m *OPS) RecurseEntry() {
@@ -238,6 +298,7 @@ func (m *OPS) RecurseEntry() {
 	defer func() {
 
 		defer fmt.Println("stoped to search <-- ")
+		//fmt.Printf("\nthe judge table(len=%d): %v\n", len(m.env.judge.ops), m.env.judge.ops)
 		if r := recover(); r != nil {
 			if ret, ok := r.(int); ok && ret == FOUND {
 				m.env.path.ShowPath()

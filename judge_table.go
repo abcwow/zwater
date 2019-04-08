@@ -11,7 +11,7 @@ func (d *JudgeItem) ToString() string {
 
 	opident := d.op.Identity()
 
-	str := fmt.Sprintf("op%d", d.enumidx) + "_" + opident
+	str := fmt.Sprintf("op%d", d.enumidx+1) + "_" + opident
 
 	return str
 
